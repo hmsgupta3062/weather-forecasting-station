@@ -403,7 +403,7 @@ streamlit.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-abs_path = ''
+abs_path = '/'
 data_source = pandas.read_csv(os.path.join(abs_path, 'feeds.csv'))
 processed_data_source = process_data(data_source)
 plot_data_source = process_plot_data(processed_data_source)
