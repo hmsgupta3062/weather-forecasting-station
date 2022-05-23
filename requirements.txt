@@ -6,6 +6,3 @@ pandas
 seaborn
 matplotlib
 statsmodels
-os
-json
-warnings
