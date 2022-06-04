@@ -34,6 +34,7 @@ config_data['updated_pressure_model_at'] = config_data['updated_data_at']
 with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
     json.dump(config_data, file)
 start_time = time.time()
+first = True
 
 def draw_line_plot(data):
     streamlit.line_chart(data)
@@ -291,7 +292,8 @@ container = streamlit.empty()
 
 while 1:
     # if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_data_at'], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 60:
-    if start_time - time.time() >= 60:
+    if start_time - time.time() >= 60 and first:
+        first = False
         start_time = time.time()
         abs_path = ''
         data_source = pandas.read_csv(os.path.join(abs_path, 'feeds.csv'))
