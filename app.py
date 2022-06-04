@@ -33,8 +33,12 @@ config_data['updated_humidity_model_at'] = config_data['updated_data_at']
 config_data['updated_pressure_model_at'] = config_data['updated_data_at']
 with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
     json.dump(config_data, file)
-start_time = time.time()
-first = True
+# start_time = time.time()
+data_first = True
+correlation_first = True
+temperature_model = True
+humidity_model = True
+pressure_model = True
 
 def draw_line_plot(data):
     streamlit.line_chart(data)
@@ -152,7 +156,7 @@ def about():
     streamlit.write(about_developer)
 
 def all_data_func():
-    global processed_data_source, plot_data_source
+    global processed_data_source, plot_data_source, correlation_first
 
     streamlit.header('View All the Data Values in the real-time')
     streamlit.write('')
@@ -191,16 +195,18 @@ def all_data_func():
     streamlit.write('')
     streamlit.write('')
     if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_correlation_plot_at'],
-                                                             '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 600:
+                                                             '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 150 or correlation_first:
         streamlit.subheader('Correlation between Data')
         streamlit.write('')
         streamlit.write(draw_correlation_plot())
         config_data['updated_correlation_plot_at'] = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S.%f')
         with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
             json.dump(config_data, file)
+        correlation_first = False
 
 def separate_data_func(data_name, data_unit, raw_fields):
-    global processed_data_source, plot_data_source
+    temp = eval(data_name + '_model')
+    global processed_data_source, plot_data_source, temp
     # data_name = 'pressure'
 
     # if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_data_at'], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 60:
@@ -236,7 +242,7 @@ def separate_data_func(data_name, data_unit, raw_fields):
     streamlit.write('')
     streamlit.write('')
 
-    if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_{}_model_at'.format(data_name)], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 600:
+    if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_{}_model_at'.format(data_name)], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 150 or temp:
         streamlit.subheader('Test for stationarity')
         streamlit.write('')
         streamlit.info('Test ran is the Augmented Dickey-Fuller Test.')
@@ -286,15 +292,16 @@ def separate_data_func(data_name, data_unit, raw_fields):
                                                                                 '%Y-%m-%d %H:%M:%S.%f')
         with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
             json.dump(config_data, file)
+        temp = False
 
 selected = streamlit_option_menu.option_menu("", ["About", 'All', 'Temperature', "Humidity", 'Pressure'], orientation='horizontal', default_index=0)
 container = streamlit.empty()
 
 while 1:
-    # if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_data_at'], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 60:
-    if start_time - time.time() >= 60 or first:
-        first = False
-        start_time = time.time()
+    if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_data_at'], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 60 or data_first:
+    # if start_time - time.time() >= 60 or first:
+        data_first = False
+        # start_time = time.time()
         abs_path = ''
         data_source = pandas.read_csv(os.path.join(abs_path, 'feeds.csv'))
         processed_data_source = process_data(data_source)
