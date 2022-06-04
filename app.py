@@ -292,7 +292,7 @@ container = streamlit.empty()
 
 while 1:
     # if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_data_at'], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 60:
-    if start_time - time.time() >= 60 and first:
+    if start_time - time.time() >= 60 or first:
         first = False
         start_time = time.time()
         abs_path = ''
