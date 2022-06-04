@@ -44,19 +44,19 @@ model_first_data = {'temperature': True,
 def draw_line_plot(data):
     streamlit.line_chart(data)
 
-@streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
+# @streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
 def draw_correlation_plot():
     fig, ax = matplotlib.pyplot.subplots()
     seaborn.heatmap(processed_data_source.corr(), ax=ax, annot=True, fmt=".3f")
     return fig
 
-@streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
+# @streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
 def draw_acf_plot(data):
     fig, ax = matplotlib.pyplot.subplots()
     statsmodels.graphics.tsaplots.plot_acf(data, ax=ax, zero=False, lags=40)
     return fig
 
-@streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
+# @streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
 def draw_pacf_plot(data):
     fig, ax = matplotlib.pyplot.subplots()
     statsmodels.graphics.tsaplots.plot_pacf(data, ax=ax, lags=40, alpha=0.05, zero=False, method=('ols'))
@@ -84,7 +84,7 @@ def fetch_data():
         with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
             json.dump(config_data, file)
 
-@streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
+# @streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
 def process_data(data_temp):
     data = data_temp.copy()
     data.loc[:10584, 'field3'] = data['field1'][:10585].values
@@ -105,7 +105,7 @@ def process_data(data_temp):
     data['pressure'].fillna(value=numpy.min(data['pressure']), inplace=True)
     return data
 
-@streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
+# @streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
 def process_plot_data(data):
     df = data.copy()
     df = df.set_index('timestamp')
@@ -124,7 +124,7 @@ def adf_test(series):
     else:
         return (False, data, 'There is a WEAK evidence against the null hypothesis. Therefore, FAILED TO REJECT the null hypothesis. Data is NON-STATIONARY.')
 
-@streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
+# @streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
 def train_model_func(data, order):
     model = statsmodels.tsa.arima.model.ARIMA(data, order=order)
     results = model.fit()
