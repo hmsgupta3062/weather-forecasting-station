@@ -15,6 +15,7 @@ import os
 import json
 import time
 import warnings
+import threading
 warnings.filterwarnings("ignore")
 
 streamlit.set_page_config(
@@ -27,13 +28,13 @@ abs_path = ''
 with open(os.path.join(abs_path, 'config_data.json'), 'r') as file:
     config_data = json.load(file)
 config_data['updated_data_at'] = datetime.datetime.strftime(datetime.datetime.now() - (pandas.tseries.offsets.Day() * 2), '%Y-%m-%d %H:%M:%S.%f')
+with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
+    json.dump(config_data, file)
 config_data['updated_correlation_plot_at'] = config_data['updated_data_at']
 config_data['updated_temperature_model_at'] = config_data['updated_data_at']
 config_data['updated_humidity_model_at'] = config_data['updated_data_at']
 config_data['updated_pressure_model_at'] = config_data['updated_data_at']
-with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
-    json.dump(config_data, file)
-# start_time = time.time()
+start_time = time.time()
 data_first = True
 correlation_first = True
 model_first_data = {'temperature': True,
