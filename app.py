@@ -26,7 +26,11 @@ streamlit.set_page_config(
 abs_path = ''
 with open(os.path.join(abs_path, 'config_data.json'), 'r') as file:
     config_data = json.load(file)
-config_data['updated_data_at'] = datetime.datetime.strftime(datetime.datetime.now() - (pandas.tseries.offsets.Minute() * 20), '%Y-%m-%d %H:%M:%S.%f')
+config_data['updated_data_at'] = datetime.datetime.strftime(datetime.datetime.now() - (pandas.tseries.offsets.Day() * 2), '%Y-%m-%d %H:%M:%S.%f')
+config_data['updated_correlation_plot_at'] = config_data['updated_data_at']
+config_data['updated_temperature_model_at'] = config_data['updated_data_at']
+config_data['updated_humidity_model_at'] = config_data['updated_data_at']
+config_data['updated_pressure_model_at'] = config_data['updated_data_at']
 with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
     json.dump(config_data, file)
 
@@ -285,7 +289,7 @@ selected = streamlit_option_menu.option_menu("", ["About", 'All', 'Temperature',
 container = streamlit.empty()
 
 while 1:
-    if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_correlation_plot_at'], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 60:
+    if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_data_at'], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 60:
         abs_path = ''
         data_source = pandas.read_csv(os.path.join(abs_path, 'feeds.csv'))
         processed_data_source = process_data(data_source)
