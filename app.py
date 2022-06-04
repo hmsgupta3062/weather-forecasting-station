@@ -36,9 +36,9 @@ with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
 # start_time = time.time()
 data_first = True
 correlation_first = True
-temperature_model = True
-humidity_model = True
-pressure_model = True
+model_first_data = {'temperature': True,
+'humidity': True,
+'pressure': True}
 
 def draw_line_plot(data):
     streamlit.line_chart(data)
@@ -205,9 +205,9 @@ def all_data_func():
         correlation_first = False
 
 def separate_data_func(data_name, data_unit, raw_fields):
-    global processed_data_source, plot_data_source, eval(data_name + '_model')
+    global processed_data_source, plot_data_source, model_first_data
     # data_name = 'pressure'
-    temp = eval(data_name + '_model')
+    # temp = model_first_data(data_name + '_model')
 
     # if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_data_at'], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 60:
     streamlit.header('Analyse the ' + data_name.title() + ' Data Model and Dataset Values')
@@ -242,7 +242,7 @@ def separate_data_func(data_name, data_unit, raw_fields):
     streamlit.write('')
     streamlit.write('')
 
-    if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_{}_model_at'.format(data_name)], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 150 or temp:
+    if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_{}_model_at'.format(data_name)], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 150 or model_first_data[data_name]:
         streamlit.subheader('Test for stationarity')
         streamlit.write('')
         streamlit.info('Test ran is the Augmented Dickey-Fuller Test.')
@@ -292,7 +292,7 @@ def separate_data_func(data_name, data_unit, raw_fields):
                                                                                 '%Y-%m-%d %H:%M:%S.%f')
         with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
             json.dump(config_data, file)
-        temp = False
+        model_first_data[data_name] = False
 
 selected = streamlit_option_menu.option_menu("", ["About", 'All', 'Temperature', "Humidity", 'Pressure'], orientation='horizontal', default_index=0)
 container = streamlit.empty()
