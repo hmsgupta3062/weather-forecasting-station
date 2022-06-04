@@ -15,7 +15,6 @@ import os
 import json
 import time
 import warnings
-import threading
 warnings.filterwarnings("ignore")
 
 streamlit.set_page_config(
@@ -25,24 +24,27 @@ streamlit.set_page_config(
 )
 
 abs_path = ''
-with open(os.path.join(abs_path, 'config_data.json'), 'r') as file:
-    config_data = json.load(file)
-config_data['updated_data_at'] = datetime.datetime.strftime(datetime.datetime.now() - (pandas.tseries.offsets.Day() * 2), '%Y-%m-%d %H:%M:%S.%f')
-with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
-    json.dump(config_data, file)
-config_data['updated_correlation_plot_at'] = config_data['updated_data_at']
-config_data['updated_temperature_model_at'] = config_data['updated_data_at']
-config_data['updated_humidity_model_at'] = config_data['updated_data_at']
-config_data['updated_pressure_model_at'] = config_data['updated_data_at']
+# with open(os.path.join(abs_path, 'config_data.json'), 'r') as file:
+#     config_data = json.load(file)
+# config_data['updated_data_at'] = datetime.datetime.strftime(datetime.datetime.now() - (pandas.tseries.offsets.Day() * 2), '%Y-%m-%d %H:%M:%S.%f')
+# with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
+#     json.dump(config_data, file)
+# config_data['updated_correlation_plot_at'] = config_data['updated_data_at']
+# config_data['updated_temperature_model_at'] = config_data['updated_data_at']
+# config_data['updated_humidity_model_at'] = config_data['updated_data_at']
+# config_data['updated_pressure_model_at'] = config_data['updated_data_at']
 start_time = time.time()
-data_first = True
-correlation_first = True
-model_first_data = {'temperature': True,
-'humidity': True,
-'pressure': True}
+# data_first = True
+# correlation_first = True
+model_data = {}
+count = 0
+
 
 def draw_line_plot(data):
-    streamlit.line_chart(data)
+    df = data.copy()
+    df = df.set_index('timestamp')
+    # return df
+    streamlit.line_chart(df)
 
 # @streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
 def draw_correlation_plot():
@@ -72,17 +74,17 @@ def updating_data_source():
     data = pandas.concat((data_source, data_2), ignore_index=True)
     data.to_csv(os.path.join(abs_path, 'feeds.csv'), index=False)
 
-def fetch_data():
-    if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_at'], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 900:
-        updating_data_source()
-        config_data['updated_at'] = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S.%f')
-        config_data['data_update_flag'] = True
-        with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
-            json.dump(config_data, file)
-    else:
-        config_data['data_update_flag'] = False
-        with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
-            json.dump(config_data, file)
+# def fetch_data():
+#     if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_at'], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 900:
+#         updating_data_source()
+#         config_data['updated_at'] = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S.%f')
+#         config_data['data_update_flag'] = True
+#         with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
+#             json.dump(config_data, file)
+#     else:
+#         config_data['data_update_flag'] = False
+#         with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
+#             json.dump(config_data, file)
 
 # @streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
 def process_data(data_temp):
@@ -106,10 +108,10 @@ def process_data(data_temp):
     return data
 
 # @streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
-def process_plot_data(data):
-    df = data.copy()
-    df = df.set_index('timestamp')
-    return df
+# def process_plot_data(data):
+#     df = data.copy()
+#     df = df.set_index('timestamp')
+#     return df
 
 # @streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
 def adf_test(series):
@@ -157,7 +159,7 @@ def about():
     streamlit.write(about_developer)
 
 def all_data_func():
-    global processed_data_source, plot_data_source, correlation_first
+    global processed_data_source, model_data
 
     streamlit.header('View All the Data Values in the real-time')
     streamlit.write('')
@@ -184,29 +186,29 @@ def all_data_func():
     streamlit.subheader('Visualising Data')
     streamlit.write('')
     streamlit.write('')
-    draw_line_plot(plot_data_source['temperature'])
+    draw_line_plot(processed_data_source.loc[:, ['timestamp', 'temperature']])
     streamlit.write('')
     streamlit.info('Humidity (in %) vs Timestamp')
     streamlit.write('')
-    draw_line_plot(plot_data_source['humidity'])
+    draw_line_plot(processed_data_source.loc[:, ['timestamp', 'humidity']])
     streamlit.write('')
     streamlit.info('Pressure (in Pa) vs Timestamp')
     streamlit.write('')
-    draw_line_plot(plot_data_source['pressure'])
+    draw_line_plot(processed_data_source.loc[:, ['timestamp', 'pressure']])
     streamlit.write('')
     streamlit.write('')
-    if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_correlation_plot_at'],
-                                                             '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 150 or correlation_first:
-        streamlit.subheader('Correlation between Data')
-        streamlit.write('')
-        streamlit.write(draw_correlation_plot())
-        config_data['updated_correlation_plot_at'] = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S.%f')
-        with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
-            json.dump(config_data, file)
-        correlation_first = False
+    # if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_correlation_plot_at'],
+    #                                                          '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 150 or correlation_first:
+    streamlit.subheader('Correlation between Data')
+    streamlit.write('')
+    streamlit.write(model_data['correlation_plot'])
+    # config_data['updated_correlation_plot_at'] = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S.%f')
+    # with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
+    #     json.dump(config_data, file)
+    # correlation_first = False
 
 def separate_data_func(data_name, data_unit, raw_fields):
-    global processed_data_source, plot_data_source, model_first_data
+    global processed_data_source, model_data
     # data_name = 'pressure'
     # temp = model_first_data(data_name + '_model')
 
@@ -239,80 +241,111 @@ def separate_data_func(data_name, data_unit, raw_fields):
     streamlit.write('')
     streamlit.info('{} (in {}) vs Timestamp'.format(data_name.title(), data_unit))
     streamlit.write('')
-    draw_line_plot(plot_data_source[data_name])
+    draw_line_plot(processed_data_source.loc[:, ['timestamp', data_name]])
     streamlit.write('')
     streamlit.write('')
 
-    if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_{}_model_at'.format(data_name)], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 150 or model_first_data[data_name]:
-        streamlit.subheader('Test for stationarity')
-        streamlit.write('')
-        streamlit.info('Test ran is the Augmented Dickey-Fuller Test.')
-        streamlit.write('')
-        flag, result, message = adf_test(processed_data_source[data_name])
-        if flag:
-            streamlit.success(message)
-        else:
-            streamlit.error(message)
-        streamlit.write(result)
-        streamlit.write('')
-        streamlit.write('')
-        streamlit.subheader('Auto-Correlation Function Plot (ACF)')
-        streamlit.write('')
-        streamlit.write(draw_acf_plot(processed_data_source[data_name]))
-        streamlit.write('')
-        streamlit.write('')
-        streamlit.subheader('Partial Auto-Correlation Function Plot (PACF)')
-        streamlit.write('')
-        streamlit.write(draw_pacf_plot(processed_data_source[data_name]))
-        streamlit.write('')
-        streamlit.write('')
+    # if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_{}_model_at'.format(data_name)], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 150 or model_first_data[data_name]:
+    streamlit.subheader('Test for stationarity')
+    streamlit.write('')
+    streamlit.info('Test ran is the Augmented Dickey-Fuller Test.')
+    streamlit.write('')
+    # flag, result, message = adf_test(processed_data_source[data_name])
+    flag, result, message = model_data['{}_adf_test'.format(data_name)]
+    if flag:
+        streamlit.success(message)
+    else:
+        streamlit.error(message)
+    streamlit.write(result)
+    streamlit.write('')
+    streamlit.write('')
+    streamlit.subheader('Auto-Correlation Function Plot (ACF)')
+    streamlit.write('')
+    # streamlit.write(draw_acf_plot(processed_data_source[data_name]))
+    streamlit.write(model_data['{}_acf_plot'.format(data_name)])
+    streamlit.write('')
+    streamlit.write('')
+    streamlit.subheader('Partial Auto-Correlation Function Plot (PACF)')
+    streamlit.write('')
+    streamlit.write(model_data['{}_pacf_plot'.format(data_name)])
+    streamlit.write('')
+    streamlit.write('')
 
-        # if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_{}_model_at'.format(data_name)], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 600:
-        model = train_model_func(processed_data_source[data_name], config_data[data_name + '_model_order'])
-        streamlit.subheader('ML Model to Forecast ' + data_name.title() + ' Data Values')
-        streamlit.write('')
-        streamlit.info('Model used is ARIMA model.')
-        streamlit.write('')
-        streamlit.write(model.summary())
-        streamlit.write('')
-        streamlit.write('')
-        streamlit.subheader('View the Forecasted ' + data_name.title() + ' Values')
-        streamlit.write('')
-        forecast_data = forecast_func(model)
-        streamlit.write(forecast_data.astype(str))
-        streamlit.write('')
-        streamlit.write('')
-        streamlit.subheader('Visualise the Forecasted ' + data_name.title() + ' Values')
-        streamlit.write('')
-        plot_forecast_data = process_plot_data(forecast_data)
-        streamlit.info('{} (in {}) vs Future Timestamp values'.format(data_name.title(), data_unit))
-        streamlit.write('')
-        draw_line_plot(plot_forecast_data)
+    # if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_{}_model_at'.format(data_name)], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 600:
+    # model = train_model_func(processed_data_source[data_name], config_data[data_name + '_model_order'])
+    model = model_data['{}_model'.format(data_name)]
+    streamlit.subheader('ML Model to Forecast ' + data_name.title() + ' Data Values')
+    streamlit.write('')
+    streamlit.info('Model used is ARIMA model.')
+    streamlit.write('')
+    streamlit.write(model.summary())
+    streamlit.write('')
+    streamlit.write('')
+    streamlit.subheader('View the Forecasted ' + data_name.title() + ' Values')
+    streamlit.write('')
+    forecast_data = model_data['{}_forecast_data'.format(data_name)]
+    streamlit.write(forecast_data.astype(str))
+    streamlit.write('')
+    streamlit.write('')
+    streamlit.subheader('Visualise the Forecasted ' + data_name.title() + ' Values')
+    streamlit.write('')
+    # plot_forecast_data = process_plot_data(forecast_data)
+    streamlit.info('{} (in {}) vs Future Timestamp values'.format(data_name.title(), data_unit))
+    streamlit.write('')
+    draw_line_plot(forecast_data)
 
-        config_data['updated_{}_model_at'.format(data_name)] = datetime.datetime.strftime(datetime.datetime.now(),
-                                                                                '%Y-%m-%d %H:%M:%S.%f')
-        with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
-            json.dump(config_data, file)
-        model_first_data[data_name] = False
+    # config_data['updated_{}_model_at'.format(data_name)] = datetime.datetime.strftime(datetime.datetime.now(),
+    #                                                                         '%Y-%m-%d %H:%M:%S.%f')
+    # with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
+    #     json.dump(config_data, file)
+    # model_first_data[data_name] = False
 
 selected = streamlit_option_menu.option_menu("", ["About", 'All', 'Temperature', "Humidity", 'Pressure'], orientation='horizontal', default_index=0)
 container = streamlit.empty()
 
+
+data_source = pandas.read_csv(os.path.join(abs_path, 'feeds.csv'))
+processed_data_source = process_data(data_source)
+# plot_data_source = process_plot_data(processed_data_source)
+with open(os.path.join(abs_path, 'config_data.json'), 'r') as file:
+    config_data = json.load(file)
+updating_data_source()
+config_data['updated_data_at'] = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S.%f')
+with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
+    json.dump(config_data, file)
+model_data['correlation_plot'] = draw_correlation_plot()
+for data_name in ['temperature', 'humidity', 'pressure']:
+    model_data['{}_adf_test'.format(data_name)] = adf_test(processed_data_source[data_name])
+    model_data['{}_acf_plot'.format(data_name)] = draw_acf_plot(processed_data_source[data_name])
+    model_data['{}_pacf_plot'.format(data_name)] = draw_pacf_plot(processed_data_source[data_name])
+    model_data['{}_model'.format(data_name)] = train_model_func(processed_data_source[data_name], config_data[data_name + '_model_order'])
+    model_data['{}_forecast_data'.format(data_name)] = forecast_func(model_data['{}_model'.format(data_name)])
+
+
+
 while 1:
-    if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_data_at'], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 60 or data_first:
-    # if start_time - time.time() >= 60 or first:
-        data_first = False
-        # start_time = time.time()
-        abs_path = ''
+    # if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_data_at'], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 60 or data_first:
+    if start_time - time.time() >= 60:
+        start_time = time.time()
         data_source = pandas.read_csv(os.path.join(abs_path, 'feeds.csv'))
         processed_data_source = process_data(data_source)
-        plot_data_source = process_plot_data(processed_data_source)
+        # plot_data_source = process_plot_data(processed_data_source)
         with open(os.path.join(abs_path, 'config_data.json'), 'r') as file:
             config_data = json.load(file)
         updating_data_source()
         config_data['updated_data_at'] = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S.%f')
         with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
             json.dump(config_data, file)
+        count += 1
+        if count == 20:
+            count = 0
+            model_data['correlation_plot'] = draw_correlation_plot()
+            for data_name in ['temperature', 'humidity', 'pressure']:
+                model_data['{}_adf_test'.format(data_name)] = adf_test(processed_data_source[data_name])
+                model_data['{}_acf_plot'.format(data_name)] = draw_acf_plot(processed_data_source[data_name])
+                model_data['{}_pacf_plot'.format(data_name)] = draw_pacf_plot(processed_data_source[data_name])
+                model_data['{}_model'.format(data_name)] = train_model_func(processed_data_source[data_name], config_data[data_name + '_model_order'])
+                model_data['{}_forecast_data'.format(data_name)] = forecast_func(model_data['{}_model'.format(data_name)])
 
     with container.container():
         if selected == 'About':
