@@ -3,32 +3,13 @@ import streamlit
 import streamlit_option_menu
 import numpy
 import pandas
-import pandas.tseries.offsets
 import seaborn
 import matplotlib
-import matplotlib.pyplot
 import statsmodels
-import statsmodels.tsa.stattools
-import statsmodels.graphics.tsaplots
-import statsmodels.tsa.arima.model
 import os
 import json
-import time
 import warnings
 warnings.filterwarnings("ignore")
-
-streamlit.set_page_config(
-    page_title="Weather Forecasting Station",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-abs_path = ''
-with open(os.path.join(abs_path, 'config_data.json'), 'r') as file:
-    config_data = json.load(file)
-config_data['updated_data_at'] = datetime.datetime.strftime(datetime.datetime.now() - (pandas.tseries.offsets.Minute() * 20), '%Y-%m-%d %H:%M:%S.%f')
-with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
-    json.dump(config_data, file)
 
 def draw_line_plot(data):
     streamlit.line_chart(data)
@@ -100,7 +81,7 @@ def process_plot_data(data):
     df = df.set_index('timestamp')
     return df
 
-# @streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
+@streamlit.cache(show_spinner=False, suppress_st_warning=True, allow_output_mutation=True)
 def adf_test(series):
     result = statsmodels.tsa.stattools.adfuller(series.dropna())
     labels = ['ADF test statistic', 'p-value', '# lags used', '# observations']
@@ -128,7 +109,6 @@ def forecast_func(model):
     return data
 
 def about():
-    # https://github.com/hmsgupta3062/weather-forecasting-station
     about_project = 'This project is a <strong>Weather Forecasting Application</strong> which uses an IoT prototype to ' \
                     'collect the information of the temperature, humidity and pressure from the surroundings and then ' \
                     'sends it to the cloud in the real-time. The data is collected every minute. The project uses the' \
@@ -151,27 +131,28 @@ def all_data_func():
     streamlit.header('View All the Data Values in the real-time')
     streamlit.write('')
     streamlit.write('')
-    # streamlit.subheader('Refresh Data Source')
-    # streamlit.write('')
-    # streamlit.button('Click Here to Refresh Data', on_click=fetch_data)
-    # if config_data['data_update_flag']:
-    #     streamlit.success('Data Refreshed Successfully')
-    # else:
-    #     streamlit.error('Data updation failed')
-    # streamlit.write('')
-    # streamlit.write('')
+    streamlit.subheader('Refresh Data Source')
+    streamlit.write('')
+    streamlit.button('Click Here to Refresh Data', on_click=fetch_data)
+    if config_data['data_update_flag']:
+        streamlit.success('Data Refreshed Successfully')
+    else:
+        streamlit.error('Data updation failed')
+    streamlit.write('')
+    streamlit.write('')
     streamlit.subheader('Exploring Raw Dataset')
     streamlit.write('')
-    streamlit.write(data_source.iloc[-1:-11:-1, :].astype(str))
+    streamlit.write(data_source.astype(str))
     streamlit.write('')
     streamlit.write('')
     streamlit.subheader('Exploring Processed Dataset')
     streamlit.write('')
-    streamlit.write(processed_data_source.iloc[-1:-11:-1, :])
+    streamlit.write(processed_data_source)
     streamlit.write('')
     streamlit.write('')
     streamlit.subheader('Visualising Data')
     streamlit.write('')
+    streamlit.info('Temperature (in DegC) vs Timestamp')
     streamlit.write('')
     draw_line_plot(plot_data_source['temperature'])
     streamlit.write('')
@@ -184,138 +165,10 @@ def all_data_func():
     draw_line_plot(plot_data_source['pressure'])
     streamlit.write('')
     streamlit.write('')
-    if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_correlation_plot_at'],
-                                                             '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 600:
-        streamlit.subheader('Correlation between Data')
-        streamlit.write('')
-        streamlit.write(draw_correlation_plot())
-        config_data['updated_correlation_plot_at'] = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S.%f')
-        with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
-            json.dump(config_data, file)
+    streamlit.subheader('Correlation between Data')
+    streamlit.write('')
+    streamlit.write(draw_correlation_plot())
 
-def separate_data_func(data_name, data_unit, raw_fields):
-    global processed_data_source, plot_data_source
-    # data_name = 'pressure'
-
-    # if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_data_at'], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 60:
-    streamlit.header('Analyse the ' + data_name.title() + ' Data Model and Dataset Values')
-    streamlit.write('')
-    streamlit.write('')
-
-    # streamlit.subheader('Refresh Data Source')
-    # streamlit.write('')
-    # streamlit.button('Click Here to Refresh Data', on_click=fetch_data)
-    # if config_data['data_update_flag']:
-    #     streamlit.success('Data Refreshed Successfully')
-    # else:
-    #     streamlit.error('Data Updation failed')
-    # streamlit.write('')
-    # streamlit.write('')
-
-    streamlit.subheader('Exploring Raw ' + data_name.title() + ' Data')
-    streamlit.write('')
-    streamlit.write(data_source.iloc[-1:-11:-1, [0, raw_fields]].astype(str))
-    streamlit.write('')
-    streamlit.write('')
-    streamlit.subheader('Exploring Processed ' + data_name.title() + ' Data')
-    streamlit.write('')
-    streamlit.write(processed_data_source.loc[:, ['timestamp', data_name]].iloc[-1:-11:-1, :])
-    streamlit.write('')
-    streamlit.write('')
-    streamlit.subheader('Visualising Data')
-    streamlit.write('')
-    streamlit.info('{} (in {}) vs Timestamp'.format(data_name.title(), data_unit))
-    streamlit.write('')
-    draw_line_plot(plot_data_source[data_name])
-    streamlit.write('')
-    streamlit.write('')
-
-    if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_{}_model_at'.format(data_name)], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 600:
-        streamlit.subheader('Test for stationarity')
-        streamlit.write('')
-        streamlit.info('Test ran is the Augmented Dickey-Fuller Test.')
-        streamlit.write('')
-        flag, result, message = adf_test(processed_data_source[data_name])
-        if flag:
-            streamlit.success(message)
-        else:
-            streamlit.error(message)
-        streamlit.write(result)
-        streamlit.write('')
-        streamlit.write('')
-        streamlit.subheader('Auto-Correlation Function Plot (ACF)')
-        streamlit.write('')
-        streamlit.write(draw_acf_plot(processed_data_source[data_name]))
-        streamlit.write('')
-        streamlit.write('')
-        streamlit.subheader('Partial Auto-Correlation Function Plot (PACF)')
-        streamlit.write('')
-        streamlit.write(draw_pacf_plot(processed_data_source[data_name]))
-        streamlit.write('')
-        streamlit.write('')
-
-        # if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_{}_model_at'.format(data_name)], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 600:
-        model = train_model_func(processed_data_source[data_name], config_data[data_name + '_model_order'])
-        streamlit.subheader('ML Model to Forecast ' + data_name.title() + ' Data Values')
-        streamlit.write('')
-        streamlit.info('Model used is ARIMA model.')
-        streamlit.write('')
-        streamlit.write(model.summary())
-        streamlit.write('')
-        streamlit.write('')
-        streamlit.subheader('View the Forecasted ' + data_name.title() + ' Values')
-        streamlit.write('')
-        forecast_data = forecast_func(model)
-        streamlit.write(forecast_data.astype(str))
-        streamlit.write('')
-        streamlit.write('')
-        streamlit.subheader('Visualise the Forecasted ' + data_name.title() + ' Values')
-        streamlit.write('')
-        plot_forecast_data = process_plot_data(forecast_data)
-        streamlit.info('{} (in {}) vs Future Timestamp values'.format(data_name.title(), data_unit))
-        streamlit.write('')
-        draw_line_plot(plot_forecast_data)
-
-        config_data['updated_{}_model_at'.format(data_name)] = datetime.datetime.strftime(datetime.datetime.now(),
-                                                                                '%Y-%m-%d %H:%M:%S.%f')
-        with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
-            json.dump(config_data, file)
-
-selected = streamlit_option_menu.option_menu("", ["About", 'All', 'Temperature', "Humidity", 'Pressure'], orientation='horizontal', default_index=0)
-container = streamlit.empty()
-
-while 1:
-    if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_correlation_plot_at'], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 60:
-        abs_path = ''
-        data_source = pandas.read_csv(os.path.join(abs_path, 'feeds.csv'))
-        processed_data_source = process_data(data_source)
-        plot_data_source = process_plot_data(processed_data_source)
-        with open(os.path.join(abs_path, 'config_data.json'), 'r') as file:
-            config_data = json.load(file)
-        updating_data_source()
-        config_data['updated_data_at'] = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S.%f')
-        with open(os.path.join(abs_path, 'config_data.json'), 'w') as file:
-            json.dump(config_data, file)
-
-    with container.container():
-        if selected == 'About':
-            about()
-        elif selected == 'All':
-            all_data_func()
-        elif selected == 'Temperature':
-            # temperature_data_func()
-            separate_data_func('temperature', 'DegC', 3)
-        elif selected == 'Humidity':
-            # humidity_data_func()
-            separate_data_func('humidity', '%', 4)
-        elif selected == 'Pressure':
-            # pressure_data_func()
-            separate_data_func('pressure', 'Pa', 5)
-        else:
-            pass
-    time.sleep(0.1)
-
-'''
 def temperature_data_func():
     global processed_data_source, plot_data_source
     data_name = 'temperature'
@@ -543,4 +396,33 @@ def pressure_data_func():
     streamlit.info('' + data_name.title() + ' (in Pa) vs Future Timestamp values')
     streamlit.write('')
     draw_line_plot(plot_forecast_data)
-'''
+
+streamlit.set_page_config(
+    page_title="Weather Forecasting Station",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+abs_path = ''
+data_source = pandas.read_csv(os.path.join(abs_path, 'feeds.csv'))
+processed_data_source = process_data(data_source)
+plot_data_source = process_plot_data(processed_data_source)
+with open(os.path.join(abs_path, 'config_data.json'), 'r') as file:
+    config_data = json.load(file)
+
+selected = streamlit_option_menu.option_menu("", ["About", 'All', 'Temperature', "Humidity", 'Pressure'], orientation='horizontal', default_index=0)
+
+if selected == 'About':
+    about()
+elif selected == 'All':
+    all_data_func()
+elif selected == 'Temperature':
+    temperature_data_func()
+elif selected == 'Humidity':
+    humidity_data_func()
+elif selected == 'Pressure':
+    pressure_data_func()
+else:
+    pass
+
+streamlit.stop()
