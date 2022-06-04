@@ -205,9 +205,9 @@ def all_data_func():
         correlation_first = False
 
 def separate_data_func(data_name, data_unit, raw_fields):
-    temp = eval(data_name + '_model')
-    global processed_data_source, plot_data_source, temp
+    global processed_data_source, plot_data_source, eval(data_name + '_model')
     # data_name = 'pressure'
+    temp = eval(data_name + '_model')
 
     # if (datetime.datetime.now() - datetime.datetime.strptime(config_data['updated_data_at'], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() >= 60:
     streamlit.header('Analyse the ' + data_name.title() + ' Data Model and Dataset Values')
