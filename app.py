@@ -1,6 +1,4 @@
 import streamlit
-import streamlit.legacy_caching
-import streamlit.caching
 import numpy
 import pandas
 import pandas.tseries.offsets
@@ -193,23 +191,23 @@ while 1:
         streamlit.write('')
 
         # displaying the dataset
-        streamlit.subheader('Exploring Raw Dataset')
+        # streamlit.subheader('Exploring Raw Dataset')
+        # streamlit.write('')
+        # streamlit.write(data_source.iloc[-1:-11:-1, :].astype(str))
+        # streamlit.write('')
+        streamlit.subheader('Exploring Processed Dataset')
         streamlit.write('')
-        streamlit.write(data_source.iloc[-1:-11:-1, :].astype(str))
+        streamlit.write(processed_data_source.iloc[-1:-11:-1, :])
         streamlit.write('')
-        # streamlit.subheader('Exploring Processed Dataset')
-        # streamlit.write('')
-        # streamlit.write(processed_data_source.iloc[-1:-11:-1, :])
-        # streamlit.write('')
-        # streamlit.subheader('Visualising Data')
-        # for i in data_name:
-        #     streamlit.write('')
-        #     streamlit.info('{} (in {}) vs Timestamp'.format(i, data_unit[i]))
-        #     streamlit.write('')
-        #     draw_line_plot(processed_data_source.loc[:, ['timestamp', i]])
-        # streamlit.write('')
+        streamlit.subheader('Visualising Data')
+        for i in data_name:
+            streamlit.write('')
+            streamlit.info('{} (in {}) vs Timestamp'.format(i, data_unit[i]))
+            streamlit.write('')
+            draw_line_plot(processed_data_source.loc[:, ['timestamp', i]])
+        streamlit.write('')
 
-        if count % 50 == 0:
+        if count % 10000 == 0:
             # draw the correlation plot
             # streamlit.subheader('Data Correlation Plot')
             # streamlit.write('')
@@ -264,13 +262,13 @@ while 1:
                 # streamlit.write('')
 
                 # visualise the forecasted values
-                # streamlit.subheader('Visualise the Forecasted {} Values'.format(i.title()))
-                # streamlit.write('')
-                # streamlit.info('{} (in {}) vs Future Timestamp values'.format(i.title(), data_unit[i]))
-                # streamlit.write('')
-                # draw_line_plot(forecast_data)
-                # streamlit.write('')
-                # streamlit.write('')
+                streamlit.subheader('Visualise the Forecasted {} Values'.format(i.title()))
+                streamlit.write('')
+                streamlit.info('{} (in {}) vs Future Timestamp values'.format(i.title(), data_unit[i]))
+                streamlit.write('')
+                draw_line_plot(forecast_data)
+                streamlit.write('')
+                streamlit.write('')
 
     count += 1
     time.sleep(1)
