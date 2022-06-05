@@ -167,6 +167,11 @@ while 1:
     streamlit.caching._memo_caches.clear_all()
     streamlit.legacy_caching.clear_cache()
 
+    # update the data source and process it
+    data_source = pandas.read_csv(os.path.join(abs_path, 'feeds.csv'))
+    updating_data_source()
+    processed_data_source = process_data(data_source)
+
     with container.container():
         streamlit.title('Weather Forecasting Station')
         streamlit.write('')
@@ -175,18 +180,14 @@ while 1:
         # display the project and developer's details
         about()
 
-        # update the data source and process it
-        data_source = pandas.read_csv(os.path.join(abs_path, 'feeds.csv'))
-        updating_data_source()
-        processed_data_source = process_data(data_source)
-
         # display the data source
         streamlit.header('Exploring the values in the real-time')
         streamlit.write('')
-        display_columns = streamlit.columns(3)
-        display_columns[0].info('Temperature: {} Deg C'.format(processed_data_source.tail(1)['temperature'].values[0]))
-        display_columns[1].info('Humidity: {} %'.format(processed_data_source.tail(1)['humidity'].values[0]))
-        display_columns[2].info('Pressure: {} Pa'.format(processed_data_source.tail(1)['pressure'].values[0]))
+        display_columns = streamlit.columns(4)
+        display_columns[0].info('Timestamp: {}'.format(processed_data_source.tail(1)['timestamp'].values[0]))
+        display_columns[1].info('Temperature: {} Deg C'.format(processed_data_source.tail(1)['temperature'].values[0]))
+        display_columns[2].info('Humidity: {} %'.format(processed_data_source.tail(1)['humidity'].values[0]))
+        display_columns[3].info('Pressure: {} Pa'.format(processed_data_source.tail(1)['pressure'].values[0]))
         streamlit.write('')
 
         # displaying the dataset
@@ -206,7 +207,7 @@ while 1:
         #     draw_line_plot(processed_data_source.loc[:, ['timestamp', i]])
         # streamlit.write('')
 
-        if count % 30 == 0:
+        if count % 3 == 0:
             # draw the correlation plot
             # streamlit.subheader('Data Correlation Plot')
             # streamlit.write('')
