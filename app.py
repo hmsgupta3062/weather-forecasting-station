@@ -1,4 +1,6 @@
 import streamlit
+import streamlit.legacy_caching
+import streamlit.caching
 import numpy
 import pandas
 import pandas.tseries.offsets
@@ -10,6 +12,7 @@ import statsmodels.tsa.stattools
 import statsmodels.graphics.tsaplots
 import statsmodels.tsa.arima.model
 import os
+import time
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -160,6 +163,10 @@ def forecast_func(model):
     return data
 
 while 1:
+    streamlit.caching._singleton_caches.clear_all()
+    streamlit.caching._memo_caches.clear_all()
+    streamlit.legacy_caching.clear_cache()
+
     with container.container():
         streamlit.title('Weather Forecasting Station')
         streamlit.write('')
@@ -183,10 +190,10 @@ while 1:
         streamlit.write('')
 
         # displaying the dataset
-        # streamlit.subheader('Exploring Raw Dataset')
-        # streamlit.write('')
-        # streamlit.write(data_source.iloc[-1:-11:-1, :].astype(str))
-        # streamlit.write('')
+        streamlit.subheader('Exploring Raw Dataset')
+        streamlit.write('')
+        streamlit.write(data_source.iloc[-1:-11:-1, :].astype(str))
+        streamlit.write('')
         # streamlit.subheader('Exploring Processed Dataset')
         # streamlit.write('')
         # streamlit.write(processed_data_source.iloc[-1:-11:-1, :])
@@ -238,20 +245,20 @@ while 1:
                 # streamlit.write('')
 
                 # training the ML model
-                streamlit.subheader('ML Model to Forecast {} Data Values'.format(i.title()))
-                streamlit.write('')
-                streamlit.info('Model used is ARIMA model.')
-                streamlit.write('')
+                # streamlit.subheader('ML Model to Forecast {} Data Values'.format(i.title()))
+                # streamlit.write('')
+                # streamlit.info('Model used is ARIMA model.')
+                # streamlit.write('')
                 model = train_model_func(processed_data_source[i], data_value['{}_model_order'.format(i)])
-                streamlit.write(model.summary())
-                streamlit.write('')
+                # streamlit.write(model.summary())
+                # streamlit.write('')
 
                 # forecasting the values
-                streamlit.subheader('Forecasting ' + i.title() + ' Values')
-                streamlit.write('')
+                # streamlit.subheader('Forecasting ' + i.title() + ' Values')
+                # streamlit.write('')
                 forecast_data = forecast_func(model)
                 streamlit.write(forecast_data.astype(str))
-                streamlit.write('')
+                # streamlit.write('')
 
                 # visualise the forecasted values
                 # streamlit.subheader('Visualise the Forecasted {} Values'.format(i.title()))
@@ -265,3 +272,4 @@ while 1:
                 count = 0
 
     count += 1
+    time.sleep(60)
