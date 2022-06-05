@@ -10,7 +10,6 @@ import statsmodels.tsa.stattools
 import statsmodels.graphics.tsaplots
 import statsmodels.tsa.arima.model
 import os
-import time
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -161,7 +160,6 @@ def forecast_func(model):
     return data
 
 while 1:
-    start_time = time.time()
     with container.container():
         streamlit.title('Weather Forecasting Station')
         streamlit.write('')
@@ -211,7 +209,6 @@ while 1:
 
             # forecast the values
             for i in data_name:
-                start_time = time.time()
                 streamlit.header('Forecasting the {} values'.format(i))
                 streamlit.write('')
 
@@ -267,5 +264,4 @@ while 1:
 
                 count = 0
 
-    time.sleep(60 - time.time() + start_time)
     count += 1
