@@ -98,6 +98,7 @@ def updating_data_source():
     data = pandas.concat((data_source, data_2), ignore_index=True)
     data.to_csv(os.path.join(abs_path, 'feeds.csv'), index=False)
 
+
 def process_data(data):
     data = data.copy()
     data.loc[:10584, 'field3'] = data['field1'][:10585].values
@@ -170,6 +171,7 @@ while 1:
 
     # update the data source and process it
     updating_data_source()
+    data_source = pandas.read_csv(os.path.join(abs_path, 'feeds.csv'))
     processed_data_source = process_data(data_source)
 
     with container.container():
