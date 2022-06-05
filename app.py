@@ -22,14 +22,6 @@ streamlit.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-abs_path = ''
-data_source = pandas.read_csv(os.path.join(abs_path, 'feeds.csv'))
-count = 0
-data_name = ['temperature', 'humidity', 'pressure']
-data_value = {"temperature_model_order": [2, 1, 1], "humidity_model_order": [1, 1, 2], "pressure_model_order": [5, 1, 4]}
-data_unit = {'temperature': 'DegC', 'humidity': '%', 'pressure': 'Pa'}
-container = streamlit.empty()
-
 def about():
     project_description = 'This project is a <strong>Weather Forecasting Application</strong> which uses an IoT prototype to collect the information of the temperature, humidity and pressure from the surroundings and then sends it to the cloud in the real-time. The project uses the most suitable ML models which are able to forecast the weather data with a very low computation time and minimum possible error rate.<br><br>The IoT prototype collects the data every minute and send it to the Thingspeak Cloud Platform in the real-time. Later, the web application fetches the data from the Thingspeak Cloud Platform and then updates the dataset and after sometime, it re-trains the model and re-plots the graphs and re-forecasts the values of the temperature, humidity and pressure for the upcoming timestamps having the frequency of per minute'
     project_hardware_components = '<ul>' \
@@ -87,6 +79,22 @@ def about():
     streamlit.markdown(developer_contact, True)
     streamlit.write('')
     streamlit.write('')
+
+abs_path = ''
+data_source = pandas.read_csv(os.path.join(abs_path, 'feeds.csv'))
+count = 0
+data_name = ['temperature', 'humidity', 'pressure']
+data_value = {"temperature_model_order": [2, 1, 1], "humidity_model_order": [1, 1, 2], "pressure_model_order": [5, 1, 4]}
+data_unit = {'temperature': 'DegC', 'humidity': '%', 'pressure': 'Pa'}
+streamlit.title('Weather Forecasting Station')
+streamlit.write('')
+streamlit.write('')
+
+# display the project and developer's details
+about()
+
+# create an empty container
+container = streamlit.empty()
 
 def updating_data_source():
     timestamp = pandas.DatetimeIndex(pandas.DatetimeIndex(
@@ -164,9 +172,9 @@ def forecast_func(model):
     return data
 
 while 1:
-    streamlit.caching._singleton_caches.clear_all()
-    streamlit.caching._memo_caches.clear_all()
-    streamlit.legacy_caching.clear_cache()
+    # streamlit.caching._singleton_caches.clear_all()
+    # streamlit.caching._memo_caches.clear_all()
+    # streamlit.legacy_caching.clear_cache()
 
     # update the data source and process it
     updating_data_source()
@@ -174,13 +182,6 @@ while 1:
     processed_data_source = process_data(data_source)
 
     with container.container():
-        streamlit.title('Weather Forecasting Station')
-        streamlit.write('')
-        streamlit.write('')
-
-        # display the project and developer's details
-        about()
-
         # display the data source
         streamlit.header('Exploring the values in the real-time')
         streamlit.write('')
@@ -208,7 +209,7 @@ while 1:
         #     draw_line_plot(processed_data_source.loc[:, ['timestamp', i]])
         # streamlit.write('')
 
-        if count % 300 == 0:
+        if count % 50 == 0:
             # draw the correlation plot
             # streamlit.subheader('Data Correlation Plot')
             # streamlit.write('')
