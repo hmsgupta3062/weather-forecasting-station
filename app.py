@@ -23,6 +23,7 @@ streamlit.set_page_config(
 )
 
 abs_path = ''
+data_source = pandas.read_csv(os.path.join(abs_path, 'feeds.csv'))
 count = 0
 data_name = ['temperature', 'humidity', 'pressure']
 data_value = {"temperature_model_order": [2, 1, 1], "humidity_model_order": [1, 1, 2], "pressure_model_order": [5, 1, 4]}
@@ -168,7 +169,6 @@ while 1:
     streamlit.legacy_caching.clear_cache()
 
     # update the data source and process it
-    data_source = pandas.read_csv(os.path.join(abs_path, 'feeds.csv'))
     updating_data_source()
     processed_data_source = process_data(data_source)
 
