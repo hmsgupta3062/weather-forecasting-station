@@ -208,7 +208,7 @@ while 1:
         #     draw_line_plot(processed_data_source.loc[:, ['timestamp', i]])
         # streamlit.write('')
 
-        if count % 3 == 0:
+        if count % 300 == 0:
             # draw the correlation plot
             # streamlit.subheader('Data Correlation Plot')
             # streamlit.write('')
@@ -272,4 +272,4 @@ while 1:
                 # streamlit.write('')
 
     count += 1
-    time.sleep(60)
+    time.sleep(1)
