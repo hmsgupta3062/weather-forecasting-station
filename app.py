@@ -20,14 +20,12 @@ streamlit.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-
 abs_path = ''
 count = 0
 data_name = ['temperature', 'humidity', 'pressure']
 data_value = {"temperature_model_order": [2, 1, 1], "humidity_model_order": [1, 1, 2], "pressure_model_order": [5, 1, 4]}
 data_unit = {'temperature': 'DegC', 'humidity': '%', 'pressure': 'Pa'}
 container = streamlit.empty()
-
 
 def about():
     project_description = 'This project is a <strong>Weather Forecasting Application</strong> which uses an IoT prototype to collect the information of the temperature, humidity and pressure from the surroundings and then sends it to the cloud in the real-time. The project uses the most suitable ML models which are able to forecast the weather data with a very low computation time and minimum possible error rate.<br><br>The IoT prototype collects the data every minute and send it to the Thingspeak Cloud Platform in the real-time. Later, the web application fetches the data from the Thingspeak Cloud Platform and then updates the dataset and after sometime, it re-trains the model and re-plots the graphs and re-forecasts the values of the temperature, humidity and pressure for the upcoming timestamps having the frequency of per minute'
@@ -88,8 +86,6 @@ def about():
     streamlit.write('')
 
 def updating_data_source():
-    global data_source
-
     timestamp = pandas.DatetimeIndex(pandas.DatetimeIndex(
         pandas.DatetimeIndex(data_source.tail(1).created_at.astype(numpy.datetime64)).strftime('%Y-%m-%d %H:%M:%S'),
         tz='GMT').tz_convert('Asia/Kolkata').strftime('%Y-%m-%d %H:%M:%S')) + pandas.tseries.offsets.Minute()
@@ -125,8 +121,6 @@ def draw_line_plot(data):
     streamlit.line_chart(df)
 
 def draw_correlation_plot():
-    global processed_data_source
-
     fig, ax = matplotlib.pyplot.subplots()
     seaborn.heatmap(processed_data_source.corr(), ax=ax, annot=True, fmt=".3f")
     return fig
@@ -159,8 +153,6 @@ def train_model_func(data, order):
     return results
 
 def forecast_func(model):
-    global processed_data_source
-
     len = processed_data_source.__len__() - 1
     predictions_future = model.predict(start=len+1, end=len+10, dynamic=False)
     date = processed_data_source.tail(1).timestamp.copy()
@@ -193,29 +185,29 @@ while 1:
         streamlit.write('')
 
         # displaying the dataset
-        streamlit.subheader('Exploring Raw Dataset')
-        streamlit.write('')
-        streamlit.write(data_source.iloc[-1:-11:-1, :].astype(str))
-        streamlit.write('')
-        streamlit.subheader('Exploring Processed Dataset')
-        streamlit.write('')
-        streamlit.write(processed_data_source.iloc[-1:-11:-1, :])
-        streamlit.write('')
-        streamlit.subheader('Visualising Data')
-        for i in data_name:
-            streamlit.write('')
-            streamlit.info('{} (in {}) vs Timestamp'.format(i, data_unit[i]))
-            streamlit.write('')
-            draw_line_plot(processed_data_source.loc[:, ['timestamp', i]])
-        streamlit.write('')
+        # streamlit.subheader('Exploring Raw Dataset')
+        # streamlit.write('')
+        # streamlit.write(data_source.iloc[-1:-11:-1, :].astype(str))
+        # streamlit.write('')
+        # streamlit.subheader('Exploring Processed Dataset')
+        # streamlit.write('')
+        # streamlit.write(processed_data_source.iloc[-1:-11:-1, :])
+        # streamlit.write('')
+        # streamlit.subheader('Visualising Data')
+        # for i in data_name:
+        #     streamlit.write('')
+        #     streamlit.info('{} (in {}) vs Timestamp'.format(i, data_unit[i]))
+        #     streamlit.write('')
+        #     draw_line_plot(processed_data_source.loc[:, ['timestamp', i]])
+        # streamlit.write('')
 
         if count % 30 == 0:
             # draw the correlation plot
-            streamlit.subheader('Data Correlation Plot')
-            streamlit.write('')
-            streamlit.write(draw_correlation_plot())
-            streamlit.write('')
-            streamlit.write('')
+            # streamlit.subheader('Data Correlation Plot')
+            # streamlit.write('')
+            # streamlit.write(draw_correlation_plot())
+            # streamlit.write('')
+            # streamlit.write('')
 
             # forecast the values
             for i in data_name:
@@ -224,29 +216,29 @@ while 1:
                 streamlit.write('')
 
                 # testing the stationarity
-                streamlit.subheader('Test for stationarity of the {} data'.format(i))
-                streamlit.write('')
-                streamlit.info('Test ran is the Augmented Dickey-Fuller Test.')
-                streamlit.write('')
-                flag, result, message = adf_test(processed_data_source[i])
-                if flag:
-                    streamlit.success(message)
-                else:
-                    streamlit.error(message)
-                streamlit.write(result)
-                streamlit.write('')
+                # streamlit.subheader('Test for stationarity of the {} data'.format(i))
+                # streamlit.write('')
+                # streamlit.info('Test ran is the Augmented Dickey-Fuller Test.')
+                # streamlit.write('')
+                # flag, result, message = adf_test(processed_data_source[i])
+                # if flag:
+                #     streamlit.success(message)
+                # else:
+                #     streamlit.error(message)
+                # streamlit.write(result)
+                # streamlit.write('')
 
                 # plotting the ACF plot
-                streamlit.subheader('Auto-Correlation Function Plot (ACF) of the {} data'.format(i))
-                streamlit.write('')
-                streamlit.write(draw_acf_plot(processed_data_source[i]))
-                streamlit.write('')
+                # streamlit.subheader('Auto-Correlation Function Plot (ACF) of the {} data'.format(i))
+                # streamlit.write('')
+                # streamlit.write(draw_acf_plot(processed_data_source[i]))
+                # streamlit.write('')
 
                 # plotting the PACF plot
-                streamlit.subheader('Partial Auto-Correlation Function Plot (PACF) of the {} data'.format(i))
-                streamlit.write('')
-                streamlit.write(draw_acf_plot(processed_data_source[i]))
-                streamlit.write('')
+                # streamlit.subheader('Partial Auto-Correlation Function Plot (PACF) of the {} data'.format(i))
+                # streamlit.write('')
+                # streamlit.write(draw_acf_plot(processed_data_source[i]))
+                # streamlit.write('')
 
                 # training the ML model
                 streamlit.subheader('ML Model to Forecast {} Data Values'.format(i.title()))
@@ -265,13 +257,13 @@ while 1:
                 streamlit.write('')
 
                 # visualise the forecasted values
-                streamlit.subheader('Visualise the Forecasted {} Values'.format(i.title()))
-                streamlit.write('')
-                streamlit.info('{} (in {}) vs Future Timestamp values'.format(i.title(), data_unit[i]))
-                streamlit.write('')
-                draw_line_plot(forecast_data)
-                streamlit.write('')
-                streamlit.write('')
+                # streamlit.subheader('Visualise the Forecasted {} Values'.format(i.title()))
+                # streamlit.write('')
+                # streamlit.info('{} (in {}) vs Future Timestamp values'.format(i.title(), data_unit[i]))
+                # streamlit.write('')
+                # draw_line_plot(forecast_data)
+                # streamlit.write('')
+                # streamlit.write('')
 
                 count = 0
 
