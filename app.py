@@ -271,7 +271,5 @@ while 1:
                 # streamlit.write('')
                 # streamlit.write('')
 
-                count = 0
-
     count += 1
     time.sleep(60)
