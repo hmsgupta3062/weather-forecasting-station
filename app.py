@@ -20,12 +20,14 @@ streamlit.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+
 abs_path = ''
 count = 0
 data_name = ['temperature', 'humidity', 'pressure']
 data_value = {"temperature_model_order": [2, 1, 1], "humidity_model_order": [1, 1, 2], "pressure_model_order": [5, 1, 4]}
 data_unit = {'temperature': 'DegC', 'humidity': '%', 'pressure': 'Pa'}
 container = streamlit.empty()
+
 
 def about():
     project_description = 'This project is a <strong>Weather Forecasting Application</strong> which uses an IoT prototype to collect the information of the temperature, humidity and pressure from the surroundings and then sends it to the cloud in the real-time. The project uses the most suitable ML models which are able to forecast the weather data with a very low computation time and minimum possible error rate.<br><br>The IoT prototype collects the data every minute and send it to the Thingspeak Cloud Platform in the real-time. Later, the web application fetches the data from the Thingspeak Cloud Platform and then updates the dataset and after sometime, it re-trains the model and re-plots the graphs and re-forecasts the values of the temperature, humidity and pressure for the upcoming timestamps having the frequency of per minute'
