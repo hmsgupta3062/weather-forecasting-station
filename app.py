@@ -98,7 +98,6 @@ def updating_data_source():
     data = pandas.concat((data_source, data_2), ignore_index=True)
     data.to_csv(os.path.join(abs_path, 'feeds.csv'), index=False)
 
-
 def process_data(data):
     data = data.copy()
     data.loc[:10584, 'field3'] = data['field1'][:10585].values
